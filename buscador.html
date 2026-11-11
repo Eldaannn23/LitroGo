@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>LitroGo | Buscador de gasolineras</title>
+  <meta name="description" content="Busca gasolineras por dirección o con tu ubicación y ordénalas por precio o cercanía." />
+  <script>(function(){try{var t=localStorage.getItem("gr_tema");t=t?JSON.parse(t):null;if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"oscuro":"claro";document.documentElement.dataset.tema=t;}catch(e){}})();</script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="img/icono-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="img/icono-180.png" />
+  <meta name="theme-color" content="#0B0F0E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body data-pagina="buscador" class="">
+  <header id="cabecera"></header>
+
+  <main>
+    <section class="hero hero-compacto contenedor">
+      <span class="hero-etiqueta"><span class="punto-vivo"></span><span id="fecha-datos">Precios oficiales del Ministerio, actualizados cada día</span></span>
+      <h1>Buscador de <span class="grad">gasolineras</span></h1>
+      <p class="sub">Escribe una dirección o usa tu ubicación. Ordena por precio o por cercanía y abre la ruta en Google Maps.</p>
+
+      <form class="buscador" id="form-buscar" autocomplete="off">
+        <div class="campo-dir">
+          <svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <input id="direccion" type="text" placeholder="Escribe una dirección, ciudad o código postal" aria-label="Dirección" />
+          <div class="sugerencias oculto" id="sugerencias"></div>
+        </div>
+        <button type="button" class="btn btn-sec" id="btn-ubicacion">
+          <svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>
+          Mi ubicación
+        </button>
+        <button type="submit" class="btn btn-primario">Buscar gasolineras</button>
+      </form>
+
+      <div class="filtros">
+        <div class="chips" id="chips-combustible"></div>
+        <label class="control-radio">Radio
+          <input type="range" id="radio" min="2" max="50" step="1" value="10" />
+          <span id="radio-val">10 km</span>
+        </label>
+      </div>
+    </section>
+
+    <section class="contenedor">
+      <div class="origen-txt oculto" id="origen-txt"></div>
+      <div class="stats" id="stats">
+        <div class="stat verde"><div class="lbl">Más barata</div><div class="val" id="st-barata">--</div><div class="det" id="st-barata-d">Busca para ver resultados</div></div>
+        <div class="stat"><div class="lbl">Precio medio en la zona</div><div class="val" id="st-media">--</div><div class="det" id="st-media-d">&nbsp;</div></div>
+        <div class="stat"><div class="lbl">Más cercana</div><div class="val" id="st-cerca">--</div><div class="det" id="st-cerca-d">&nbsp;</div></div>
+        <div class="stat ambar"><div class="lbl">Ahorro en 50 litros</div><div class="val" id="st-ahorro">--</div><div class="det" id="st-ahorro-d">Más barata frente a la más cara</div></div>
+      </div>
+
+      <div class="vista-movil" role="group" aria-label="Vista">
+        <button type="button" data-vista="lista" class="activo"><svg class="ico" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h0M3 12h0M3 18h0"/></svg>Lista</button>
+        <button type="button" data-vista="mapa"><svg class="ico" viewBox="0 0 24 24"><path d="M9 4 3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Mapa</button>
+      </div>
+      <div class="zona-resultados">
+        <div class="panel-lista">
+          <div class="cab-lista">
+            <div>
+              <h2>Gasolineras</h2>
+              <div class="cuenta" id="cuenta">Sin búsqueda todavía</div>
+              <div class="rutas-estado" id="rutas-estado"></div>
+            </div>
+            <div class="orden" role="group" aria-label="Ordenar">
+              <button type="button" data-orden="precio" class="activo">
+                <svg class="ico" viewBox="0 0 24 24"><path d="M20.6 13.4 13.4 20.6a2 2 0 0 1-2.8 0L3 13V3h10l7.6 7.6a2 2 0 0 1 0 2.8z"/><circle cx="7.5" cy="7.5" r="1.5"/></svg>Precio</button>
+              <button type="button" data-orden="distancia">
+                <svg class="ico" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>Cercanía</button>
+            </div>
+          </div>
+          <div class="lista" id="lista">
+            <div class="vacio">
+              <div class="icono-grande"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div>
+              <h3>Empieza tu búsqueda</h3>
+              <p>Comparte tu ubicación o escribe una dirección para ver las gasolineras de tu zona.</p>
+            </div>
+          </div>
+        </div>
+        <div class="panel-mapa">
+          <div id="mapa"></div>
+          <div class="leyenda">
+            <span><i style="background:var(--verde)"></i>Barata</span>
+            <span><i style="background:var(--ambar)"></i>Media</span>
+            <span><i style="background:var(--rojo)"></i>Cara</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer id="pie"></footer>
+  <!-- Ventana para pedir la ubicación -->
+  <div class="modal-fondo oculto" id="modal-ubicacion" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+    <div class="modal">
+      <div class="radar"><span><svg class="ico" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span></div>
+      <h3 id="modal-titulo">¿Buscamos cerca de ti?</h3>
+      <p>Si compartes tu ubicación te mostramos al momento las gasolineras más cercanas y baratas, sin escribir nada.</p>
+      <div class="botones">
+        <button class="btn btn-primario" id="modal-si">Sí, usar mi ubicación</button>
+        <button class="btn btn-fantasma" id="modal-no">No, prefiero escribir una dirección</button>
+      </div>
+      <div class="nota">Tu ubicación solo se usa en tu navegador para calcular distancias.</div>
+    </div>
+  </div>
+
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+  <script src="js/config.js"></script>
+  <script src="js/comun.js"></script>
+  <script src="js/nube.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/principal.js"></script>
+</body>
+</html>

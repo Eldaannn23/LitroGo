@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>LitroGo | Alertas de precios</title>
+  <meta name="description" content="Recibe un aviso cuando una gasolinera alcance tu precio objetivo." />
+  <script>(function(){try{var t=localStorage.getItem("gr_tema");t=t?JSON.parse(t):null;if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"oscuro":"claro";document.documentElement.dataset.tema=t;}catch(e){}})();</script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="img/icono-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="img/icono-180.png" />
+  <meta name="theme-color" content="#0B0F0E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body data-pagina="alertas" class="">
+  <header id="cabecera"></header>
+
+  <main>
+    <section class="hero-herr contenedor ">
+      <span class="hero-etiqueta"><span class="punto-vivo"></span><span id="fecha-datos">Precios oficiales del Ministerio</span></span>
+      <h1>Alertas de <span class="grad">precios</span></h1>
+      <p>Elige un precio objetivo y te avisamos cuando una gasolinera de tu zona lo alcance.</p>
+    </section>
+    <div class="contenedor">
+<section class="seccion activa" id="sec-alertas">
+      <div class="rejilla-2">
+        <div class="caja">
+          <h2>Nueva alerta de bajada</h2>
+          <p class="desc">Elige un precio objetivo. Cada vez que abras LitroGo comprobaremos los precios oficiales y te avisaremos si se alcanza.</p>
+          <div class="interruptor">
+            <div><b>Notificaciones del navegador</b><span id="n-estado">Recibe el aviso aunque estés en otra pestaña.</span></div>
+            <button class="btn btn-sec btn-peq" id="n-activar">Activar</button>
+          </div>
+          <div class="campos">
+            <div class="campo ancho"><label for="a-tipo">Vigilar</label><div class="entrada"><select id="a-tipo">
+              <option value="zona">Cualquier gasolinera alrededor de mi última búsqueda</option>
+              <option value="estacion">Una gasolinera concreta</option>
+            </select></div></div>
+            <div class="campo ancho" id="a-est-campo"><label for="a-est">Gasolinera</label><div class="entrada"><select id="a-est"></select></div></div>
+            <div class="campo" id="a-radio-campo"><label for="a-radio">Radio</label><div class="entrada"><input id="a-radio" type="number" min="1" max="50" value="10" /><span class="unidad">km</span></div></div>
+            <div class="campo"><label for="a-comb">Combustible</label><div class="entrada"><select id="a-comb"></select></div></div>
+            <div class="campo"><label for="a-obj">Precio objetivo</label><div class="entrada"><input id="a-obj" type="number" step="0.001" min="0" value="1.450" /><span class="unidad">€/L o menos</span></div></div>
+          </div>
+          <p class="ayuda" id="a-ayuda"></p>
+          <button class="btn btn-primario" id="a-crear" style="margin-top:18px;width:100%">Crear alerta</button>
+        </div>
+        <div class="caja">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start">
+            <div><h2>Tus alertas</h2><p class="desc">Estado según los precios oficiales más recientes.</p></div>
+            <button class="btn btn-fantasma btn-peq" id="a-comprobar">Comprobar ahora</button>
+          </div>
+          <div class="items" id="lista-alertas"></div>
+        </div>
+      </div>
+    </section>
+    </div>
+  </main>
+
+  <footer id="pie"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/comun.js"></script>
+  <script src="js/nube.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/herramientas.js"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>LitroGo | Favoritos</title>
+  <meta name="description" content="Tus gasolineras favoritas con el precio de hoy." />
+  <script>(function(){try{var t=localStorage.getItem("gr_tema");t=t?JSON.parse(t):null;if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"oscuro":"claro";document.documentElement.dataset.tema=t;}catch(e){}})();</script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="img/icono-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="img/icono-180.png" />
+  <meta name="theme-color" content="#0B0F0E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body data-pagina="favoritos" class="">
+  <header id="cabecera"></header>
+
+  <main>
+    <section class="hero-herr contenedor ">
+      <span class="hero-etiqueta"><span class="punto-vivo"></span><span id="fecha-datos">Precios oficiales del Ministerio</span></span>
+      <h1>Tus <span class="grad">favoritos</span></h1>
+      <p>Las gasolineras que has guardado, con el precio de hoy y si ha subido o bajado.</p>
+    </section>
+    <div class="contenedor">
+<section class="seccion activa" id="sec-favoritos">
+      <div class="caja">
+        <div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start">
+          <div><h2>Tus gasolineras favoritas</h2><p class="desc">Precios actualizados de las gasolineras que has guardado desde el buscador.</p></div>
+          <a class="btn btn-primario btn-peq" href="buscador.html">Buscar y añadir más</a>
+        </div>
+        <div class="items" id="lista-favoritos"><div class="cargando"><div class="spinner"></div>Cargando precios...</div></div>
+      </div>
+    </section>
+    </div>
+  </main>
+
+  <footer id="pie"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/comun.js"></script>
+  <script src="js/nube.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/herramientas.js"></script>
+</body>
+</html>

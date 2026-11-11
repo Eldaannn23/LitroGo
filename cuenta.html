@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>LitroGo | Mi cuenta</title>
+  <meta name="description" content="Tu vehículo, tus preferencias y tus datos en LitroGo." />
+  <script>(function(){try{var t=localStorage.getItem("gr_tema");t=t?JSON.parse(t):null;if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"oscuro":"claro";document.documentElement.dataset.tema=t;}catch(e){}})();</script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="img/icono-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="img/icono-180.png" />
+  <meta name="theme-color" content="#0B0F0E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body data-pagina="cuenta" class="">
+  <header id="cabecera"></header>
+
+  <main>
+    <section class="hero-herr contenedor ">
+      <span class="hero-etiqueta"><span class="punto-vivo"></span><span id="fecha-datos">Precios oficiales del Ministerio</span></span>
+      <h1>Mi <span class="grad">cuenta</span></h1>
+      <p>Tu vehículo y tus preferencias se usan en el buscador, la calculadora y el comparador.</p>
+    </section>
+    <section class="contenedor seccion activa">
+      <div class="caja caja-nube" id="cuenta-nube">
+        <div class="nube-cab">
+          <div><h2>Tu cuenta LitroGo <span class="pill">opcional</span></h2>
+          <p class="desc">Con una cuenta, tu perfil, tu vehículo, tus favoritos, tus alertas y tus opiniones se guardan en la nube y los recuperas en cualquier dispositivo. Sin cuenta, todo sigue funcionando en este navegador.</p></div>
+        </div>
+        <div id="nube-sin-config" class="aviso oculto"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h0M11 12h1v5h1"/></svg><span>El inicio de sesión todavía no está conectado a la base de datos. Para activarlo hay que crear el proyecto de Supabase y rellenar <b>js/config.js</b> (los pasos están en <b>supabase/LEEME.md</b>). Mientras tanto, tus datos se guardan en este dispositivo.</span></div>
+        <div id="nube-cargando" class="cargando oculto"><div class="spinner"></div>Conectando con tu cuenta...</div>
+
+        <div id="nube-invitado" class="oculto">
+          <div class="pestanas pestanas-peq" role="tablist">
+            <a href="#" class="activo" data-nube-tab="entrar">Entrar</a>
+            <a href="#" data-nube-tab="registro">Crear cuenta</a>
+            <a href="#" data-nube-tab="recuperar">He olvidado la contraseña</a>
+          </div>
+          <form class="nube-form" id="f-entrar" data-nube-panel="entrar" novalidate>
+            <div class="campos">
+              <div class="campo ancho"><label for="e-correo">Correo electrónico</label><div class="entrada"><input id="e-correo" type="email" autocomplete="email" required maxlength="254" /></div></div>
+              <div class="campo ancho"><label for="e-pass">Contraseña</label><div class="entrada"><input id="e-pass" type="password" autocomplete="current-password" required minlength="8" maxlength="72" /></div></div>
+            </div>
+            <button class="btn btn-primario" type="submit">Entrar</button>
+          </form>
+          <form class="nube-form oculto" id="f-registro" data-nube-panel="registro" novalidate>
+            <div class="campos">
+              <div class="campo ancho"><label for="r-nombre">Nombre (se mostrará en tus opiniones)</label><div class="entrada"><input id="r-nombre" autocomplete="nickname" maxlength="60" placeholder="Opcional" /></div></div>
+              <div class="campo ancho"><label for="r-correo">Correo electrónico</label><div class="entrada"><input id="r-correo" type="email" autocomplete="email" required maxlength="254" /></div></div>
+              <div class="campo"><label for="r-pass">Contraseña</label><div class="entrada"><input id="r-pass" type="password" autocomplete="new-password" required minlength="8" maxlength="72" /></div></div>
+              <div class="campo"><label for="r-pass2">Repite la contraseña</label><div class="entrada"><input id="r-pass2" type="password" autocomplete="new-password" required minlength="8" maxlength="72" /></div></div>
+            </div>
+            <p class="ayuda">Mínimo 8 caracteres, con letras y números.</p>
+            <label class="check"><input type="checkbox" id="r-acepto" required /><span>He leído la <a href="privacidad.html" target="_blank">política de privacidad</a> y acepto que LitroGo guarde mis datos para ofrecerme el servicio.</span></label>
+            <button class="btn btn-primario" type="submit">Crear cuenta</button>
+          </form>
+          <form class="nube-form oculto" id="f-recuperar" data-nube-panel="recuperar" novalidate>
+            <div class="campos"><div class="campo ancho"><label for="o-correo">Correo de tu cuenta</label><div class="entrada"><input id="o-correo" type="email" autocomplete="email" required maxlength="254" /></div></div></div>
+            <p class="ayuda">Te enviaremos un enlace para elegir una contraseña nueva.</p>
+            <button class="btn btn-primario" type="submit">Enviar enlace</button>
+          </form>
+          <p class="nube-msg" id="nube-msg" role="status" aria-live="polite"></p>
+        </div>
+
+        <form id="f-nueva" class="nube-form oculto" novalidate>
+          <h3>Elige tu contraseña nueva</h3>
+          <div class="campos">
+            <div class="campo"><label for="n-pass">Contraseña nueva</label><div class="entrada"><input id="n-pass" type="password" autocomplete="new-password" required minlength="8" maxlength="72" /></div></div>
+            <div class="campo"><label for="n-pass2">Repítela</label><div class="entrada"><input id="n-pass2" type="password" autocomplete="new-password" required minlength="8" maxlength="72" /></div></div>
+          </div>
+          <button class="btn btn-primario" type="submit">Guardar contraseña</button>
+        </form>
+
+        <div id="nube-conectado" class="oculto">
+          <div class="nube-usuario">
+            <span class="avatar grande" id="nube-avatar">?</span>
+            <div><b id="nube-correo"></b><span id="nube-estado" class="ayuda"></span></div>
+            <span class="pill ok" id="nube-plan">Cuenta gratuita</span>
+          </div>
+          <div class="nube-acciones">
+            <button class="btn btn-sec btn-peq" type="button" id="nube-sinc">Sincronizar ahora</button>
+            <button class="btn btn-sec btn-peq" type="button" id="nube-cambiar">Cambiar contraseña</button>
+            <button class="btn btn-sec btn-peq" type="button" id="nube-exportar">Descargar mis datos de la nube</button>
+            <button class="btn btn-fantasma btn-peq" type="button" id="nube-salir">Cerrar sesión</button>
+            <button class="btn btn-fantasma btn-peq btn-peligro" type="button" id="nube-borrar">Borrar mi cuenta</button>
+          </div>
+          <p class="nube-msg" id="nube-msg2" role="status" aria-live="polite"></p>
+        </div>
+      </div>
+      <div class="rejilla-2" style="margin-top:18px">
+        <form class="caja" id="form-cuenta">
+          <h2>Perfil y vehículo</h2>
+          <p class="desc">Con estos datos calculamos tu ahorro real.</p>
+          <div class="campos">
+            <div class="campo ancho"><label for="p-nombre">Nombre (para tus opiniones)</label><div class="entrada"><input id="p-nombre" maxlength="40" placeholder="Cómo quieres aparecer" /></div></div>
+            <div class="campo"><label for="p-marca">Marca</label><div class="entrada"><input id="p-marca" maxlength="40" placeholder="Por ejemplo, Seat" /></div></div>
+            <div class="campo"><label for="p-modelo">Modelo</label><div class="entrada"><input id="p-modelo" maxlength="60" placeholder="Por ejemplo, León" /></div></div>
+            <div class="campo"><label for="p-anio">Año</label><div class="entrada"><input id="p-anio" type="number" min="1950" max="2100" step="1" placeholder="2019" /></div></div>
+            <div class="campo"><label for="p-comb">Combustible</label><div class="entrada"><select id="p-comb"></select></div></div>
+            <div class="campo"><label for="p-consumo">Consumo</label><div class="entrada"><input id="p-consumo" type="number" step="0.1" min="1" /><span class="unidad">L/100 km</span></div></div>
+            <div class="campo"><label for="p-deposito">Depósito</label><div class="entrada"><input id="p-deposito" type="number" step="1" min="5" /><span class="unidad">L</span></div></div>
+            <div class="campo"><label for="p-radio">Radio de búsqueda</label><div class="entrada"><input id="p-radio" type="number" step="1" min="2" max="50" /><span class="unidad">km</span></div></div>
+          </div>
+          <h2 style="margin-top:24px">Preferencias</h2>
+          <div class="campos" style="margin-top:12px">
+            <div class="campo"><label for="p-ubicacion">Ubicación al entrar</label><div class="entrada"><select id="p-ubicacion"><option value="preguntar">Preguntar</option><option value="siempre">Usarla siempre</option><option value="nunca">No usarla</option></select></div></div>
+            <div class="campo"><label for="p-tema">Aspecto</label><div class="entrada"><select id="p-tema"><option value="sistema">Como el sistema</option><option value="claro">Claro</option><option value="oscuro">Oscuro</option></select></div></div>
+          </div>
+          <button class="btn btn-primario" type="submit" style="margin-top:20px;width:100%">Guardar</button>
+        </form>
+        <div class="caja">
+          <h2>Tus datos en este dispositivo</h2>
+          <p class="desc">Lo que LitroGo guarda en este navegador. Con sesión iniciada, también está en tu cuenta.</p>
+          <div class="mini-stats" id="p-resumen"></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:18px">
+            <button class="btn btn-sec" type="button" id="p-exportar"><svg class="ico" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5"/><path d="M5 20h14"/></svg>Descargar mis datos</button>
+            <button class="btn btn-fantasma" type="button" id="p-borrar">Borrar todos mis datos</button>
+          </div>
+          <p class="ayuda" style="margin-top:12px">La descarga es un archivo JSON con tus favoritos, alertas, opiniones y preferencias.</p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer id="pie"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/comun.js"></script>
+  <script src="js/nube.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/herramientas.js"></script>
+</body>
+</html>

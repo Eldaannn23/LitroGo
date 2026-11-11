@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>LitroGo | Comparador de precios</title>
+  <meta name="description" content="Compara hasta 4 gasolineras: precios de todos los combustibles y coste de llenar el depósito." />
+  <script>(function(){try{var t=localStorage.getItem("gr_tema");t=t?JSON.parse(t):null;if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"oscuro":"claro";document.documentElement.dataset.tema=t;}catch(e){}})();</script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="img/icono-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="img/icono-180.png" />
+  <meta name="theme-color" content="#0B0F0E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body data-pagina="comparador" class="">
+  <header id="cabecera"></header>
+
+  <main>
+    <section class="hero-herr contenedor ">
+      <span class="hero-etiqueta"><span class="punto-vivo"></span><span id="fecha-datos">Precios oficiales del Ministerio</span></span>
+      <h1>Comparador de <span class="grad">precios</span></h1>
+      <p>Pon hasta 4 gasolineras lado a lado: todos los combustibles, el mejor precio marcado y lo que cuesta llenar tu depósito.</p>
+    </section>
+    <section class="contenedor seccion activa">
+      <div class="caja cerca">
+        <div class="cerca-cab">
+          <div>
+            <h2>Gasolineras cerca de ti</h2>
+            <p class="cerca-origen" id="cerca-origen">Buscando tu ubicación...</p>
+          </div>
+          <div class="cerca-filtros">
+            <div class="campo"><label for="cerca-comb">Combustible</label><div class="entrada"><select id="cerca-comb"></select></div></div>
+            <div class="orden" role="group" aria-label="Ordenar" id="cerca-orden">
+              <button type="button" data-orden="distancia" class="activo">Más cerca</button>
+              <button type="button" data-orden="precio">Más barata</button>
+            </div>
+          </div>
+        </div>
+        <form class="cerca-dir" id="cerca-form" autocomplete="off">
+          <button class="btn btn-sec btn-peq" id="cerca-ubic" type="button"></button>
+          <div class="entrada"><input id="cerca-texto" type="text" placeholder="O escribe una dirección, ciudad o código postal" aria-label="Dirección" /></div>
+          <button class="btn btn-fantasma btn-peq" type="submit">Buscar aquí</button>
+        </form>
+        <div class="cerca-estado">
+          <span><b id="cmp-cuenta">0 de 4</b> seleccionadas</span>
+          <span class="cerca-puntos" id="cerca-puntos" aria-hidden="true"><i></i><i></i><i></i><i></i></span>
+        </div>
+        <div id="cerca-lista" class="cerca-lista" aria-live="polite"></div>
+        <div class="cerca-pie">
+          <button class="btn btn-fantasma btn-peq oculto" id="cerca-mas" type="button">Ver más gasolineras</button>
+          <p class="ayuda" id="cerca-ayuda"></p>
+        </div>
+      </div>
+
+      <div class="caja" id="caja-cmp" style="margin-top:20px">
+        <div class="cmp-controles">
+          <div style="flex:1 1 260px"><h2>Tu comparación</h2><p class="desc" style="margin:0">Todos los combustibles lado a lado. En verde, el más barato de cada fila.</p></div>
+          <div class="campo" style="width:170px"><label for="cmp-litros">Litros a repostar</label><div class="entrada"><input id="cmp-litros" type="number" min="1" step="1" value="50" /><span class="unidad">L</span></div></div>
+          <button class="btn btn-fantasma btn-peq oculto" id="cmp-vaciar" type="button">Vaciar</button>
+        </div>
+        <div class="cmp-guardadas oculto" id="cmp-guardadas">
+          <div class="campo" style="flex:1 1 320px"><label for="cmp-est">O añade una de tus favoritas o vistas recientemente</label><div class="entrada"><select id="cmp-est"></select></div></div>
+          <button class="btn btn-sec btn-peq" id="cmp-anadir" type="button">Añadir</button>
+        </div>
+        <div id="cmp-tabla"></div>
+        <p class="ayuda">Precios oficiales del Ministerio. Distancias desde el punto de partida de arriba.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer id="pie"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/comun.js"></script>
+  <script src="js/nube.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/herramientas.js"></script>
+</body>
+</html>

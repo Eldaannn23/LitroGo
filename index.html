@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>LitroGo | Gasolineras más baratas y cercanas</title>
+  <meta name="description" content="Encuentra las gasolineras más cercanas y más baratas con los precios oficiales del Ministerio para la Transición Ecológica." />
+  <script>(function(){try{var t=localStorage.getItem("gr_tema");t=t?JSON.parse(t):null;if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"oscuro":"claro";document.documentElement.dataset.tema=t;}catch(e){}})();</script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="img/icono-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="img/icono-180.png" />
+  <meta name="theme-color" content="#0B0F0E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body data-pagina="inicio" class="">
+  <header id="cabecera"></header>
+
+  <main>
+    <section class="hero hero-inicio contenedor">
+      <span class="hero-etiqueta"><span class="punto-vivo"></span><span id="fecha-datos">Precios oficiales del Ministerio, actualizados cada día</span></span>
+      <h1>Reposta donde de verdad <span class="grad">ahorras</span>.</h1>
+      <p class="sub">LitroGo compara los precios oficiales de todas las gasolineras de España y te dice cuál te sale más a cuenta, contando el desvío.</p>
+      <form class="buscador" id="inicio-form" autocomplete="off">
+        <div class="campo-dir"><svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><input id="inicio-dir" type="text" placeholder="Escribe una dirección, ciudad o código postal" aria-label="Dirección" /></div>
+        <button type="button" class="btn btn-sec" id="inicio-ubicacion"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>Mi ubicación</button>
+        <button type="submit" class="btn btn-primario">Buscar gasolineras</button>
+      </form>
+    </section>
+
+    <section class="contenedor">
+      <div class="tu-zona oculto" id="tu-zona"></div>
+      <div class="titulo-bloque"><h2>Todo LitroGo</h2><p>Los 9 apartados, en orden. También están siempre en el menú.</p></div>
+      <div class="apartados">
+        <a class="apartado" href="buscador.html"><span class="num">2</span><span class="ic"><svg class="ico" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg></span><b>Buscador y mapa</b><span>Gasolineras cercanas en lista y en el mapa, por precio o cercanía.</span></a>
+        <a class="apartado" href="comparador.html"><span class="num">3</span><span class="ic"><svg class="ico" viewBox="0 0 24 24"><rect x="3" y="4" width="7" height="16" rx="2"/><rect x="14" y="4" width="7" height="16" rx="2"/></svg></span><b>Comparador</b><span>Hasta 4 gasolineras lado a lado y el coste de llenar.</span><em class="contador oculto" data-contador="comparar"></em></a>
+        <a class="apartado" href="ahorro.html"><span class="num">4</span><span class="ic"><svg class="ico" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h2M12 11h2M8 15h2M12 15h2M16 11v7"/></svg></span><b>Calculadora de ahorro</b><span>Lo que ahorras al mes y al año, contando el desvío.</span></a>
+        <a class="apartado" href="estadisticas.html"><span class="num">5</span><span class="ic"><svg class="ico" viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 6-7"/></svg></span><b>Historial y estadísticas</b><span>Evolución de precios y marcas más baratas de tu zona.</span></a>
+        <a class="apartado" href="favoritos.html"><span class="num">6</span><span class="ic"><svg class="ico" viewBox="0 0 24 24"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2L12 17.3l-5.6 2.9 1.1-6.2L3 9.6l6.2-.9z"/></svg></span><b>Favoritos</b><span>Tus gasolineras con el precio de hoy.</span><em class="contador oculto" data-contador="favoritos"></em></a>
+        <a class="apartado" href="alertas.html"><span class="num">7</span><span class="ic"><svg class="ico" viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 8 3 8H3s3-1 3-8"/><path d="M10.3 21a2 2 0 0 0 3.4 0"/></svg></span><b>Alertas de precios</b><span>Te avisamos cuando se alcanza tu precio objetivo.</span><em class="contador oculto" data-contador="alertas"></em></a>
+        <a class="apartado" href="cuenta.html"><span class="num">8</span><span class="ic"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg></span><b>Mi cuenta</b><span>Tu vehículo, preferencias y tus datos.</span></a>
+        <a class="apartado" href="opiniones.html"><span class="num">9</span><span class="ic"><svg class="ico" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg></span><b>Servicios y opiniones</b><span>Horarios, servicios y valoraciones.</span></a>
+      </div>
+      <div class="titulo-bloque"><h2>Cómo funciona</h2></div>
+      <ol class="pasos">
+        <li><b>Busca</b><span>Comparte tu ubicación o escribe una dirección.</span></li>
+        <li><b>Compara</b><span>Ordena por precio o cercanía y compara hasta 4 gasolineras.</span></li>
+        <li><b>Ahorra</b><span>Abre la ruta en Google Maps y crea alertas para la próxima vez.</span></li>
+      </ol>
+    </section>
+  </main>
+
+  <footer id="pie"></footer>
+  <!-- Ventana para pedir la ubicación -->
+  <div class="modal-fondo oculto" id="modal-ubicacion" role="dialog" aria-modal="true" aria-labelledby="modal-titulo">
+    <div class="modal">
+      <div class="radar"><span><svg class="ico" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span></div>
+      <h3 id="modal-titulo">¿Buscamos cerca de ti?</h3>
+      <p>Si compartes tu ubicación te mostramos al momento las gasolineras más cercanas y baratas, sin escribir nada.</p>
+      <div class="botones">
+        <button class="btn btn-primario" id="modal-si">Sí, usar mi ubicación</button>
+        <button class="btn btn-fantasma" id="modal-no">No, prefiero escribir una dirección</button>
+      </div>
+      <div class="nota">Tu ubicación solo se usa en tu navegador para calcular distancias.</div>
+    </div>
+  </div>
+
+
+  <script src="js/config.js"></script>
+  <script src="js/comun.js"></script>
+  <script src="js/nube.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/herramientas.js"></script>
+</body>
+</html>

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>LitroGo | Servicios y opiniones</title>
+  <meta name="description" content="Horario, servicios y opiniones de las gasolineras." />
+  <script>(function(){try{var t=localStorage.getItem("gr_tema");t=t?JSON.parse(t):null;if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"oscuro":"claro";document.documentElement.dataset.tema=t;}catch(e){}})();</script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="img/icono-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="img/icono-180.png" />
+  <meta name="theme-color" content="#0B0F0E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body data-pagina="opiniones" class="">
+  <header id="cabecera"></header>
+
+  <main>
+    <section class="hero-herr contenedor ">
+      <span class="hero-etiqueta"><span class="punto-vivo"></span><span id="fecha-datos">Precios oficiales del Ministerio</span></span>
+      <h1>Servicios y <span class="grad">opiniones</span></h1>
+      <p>Horario y servicios de cada gasolinera, y lo que opinan otros conductores.</p>
+    </section>
+    <div class="contenedor">
+<section class="seccion activa" id="sec-opiniones">
+      <div class="rejilla-2">
+        <div class="caja">
+          <h2>Servicios y opiniones</h2>
+          <p class="desc">Elige una gasolinera para ver su horario y servicios, y leer o dejar valoraciones.</p>
+          <div class="campo"><label for="o-est">Gasolinera</label><div class="entrada"><select id="o-est"></select></div></div>
+          <div id="o-ficha"></div>
+          <div id="o-resumen" style="margin-top:18px"></div>
+          <div class="items" id="lista-opiniones"></div>
+        </div>
+        <div class="caja">
+          <h2>Escribe tu opinión</h2>
+          <p class="desc">Ayuda a otros conductores a elegir mejor.</p>
+          <form id="form-opinion">
+            <div class="campos">
+              <div class="campo ancho"><label>Tu valoración</label><div class="estrellas" id="o-estrellas"></div></div>
+              <div class="campo ancho"><label for="o-nombre">Nombre</label><div class="entrada"><input id="o-nombre" maxlength="40" placeholder="Cómo quieres aparecer" required /></div></div>
+              <div class="campo ancho"><label for="o-texto">Comentario</label><div class="entrada"><textarea id="o-texto" maxlength="600" placeholder="Precio, atención, limpieza, tiempo de espera..." required></textarea></div></div>
+            </div>
+            <button class="btn btn-primario" type="submit" style="margin-top:18px;width:100%">Publicar opinión</button>
+          </form>
+          <div class="aviso"><svg class="ico" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h0M11 12h1v5h1"/></svg><span>Las opiniones se guardan en este navegador. Para que todos los usuarios vean las de los demás hay que conectar la web a una base de datos (ver README).</span></div>
+        </div>
+      </div>
+    </section>
+    </div>
+  </main>
+
+  <footer id="pie"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/comun.js"></script>
+  <script src="js/nube.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/herramientas.js"></script>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>LitroGo | Historial y estadísticas</title>
+  <meta name="description" content="Evolución de precios de tus gasolineras y estadísticas de tu zona." />
+  <script>(function(){try{var t=localStorage.getItem("gr_tema");t=t?JSON.parse(t):null;if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"oscuro":"claro";document.documentElement.dataset.tema=t;}catch(e){}})();</script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="img/icono-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="img/icono-180.png" />
+  <meta name="theme-color" content="#0B0F0E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body data-pagina="estadisticas" class="">
+  <header id="cabecera"></header>
+
+  <main>
+    <section class="hero-herr contenedor ">
+      <span class="hero-etiqueta"><span class="punto-vivo"></span><span id="fecha-datos">Precios oficiales del Ministerio</span></span>
+      <h1>Historial y <span class="grad">estadísticas</span></h1>
+      <p>Cómo han cambiado los precios en las últimas semanas y qué marcas son más baratas en tu zona.</p>
+    </section>
+    <div class="contenedor">
+<section class="seccion activa" id="sec-historial">
+      <div class="caja">
+        <h2>Historial de precios</h2>
+        <p class="desc">Evolución diaria del precio con los datos históricos oficiales del Ministerio, comparada con la media de su municipio.</p>
+        <div class="campos" style="grid-template-columns:2fr 1fr 1fr">
+          <div class="campo"><label for="h-est">Gasolinera</label><div class="entrada"><select id="h-est"></select></div></div>
+          <div class="campo"><label for="h-comb">Combustible</label><div class="entrada"><select id="h-comb"></select></div></div>
+          <div class="campo"><label for="h-dias">Periodo</label><div class="entrada"><select id="h-dias"><option value="7">7 días</option><option value="14" selected>14 días</option><option value="30">30 días</option></select></div></div>
+        </div>
+        <div class="mini-stats" id="h-stats">
+          <div><span>Precio hoy</span><b id="h-hoy">--</b></div>
+          <div><span>Mínimo</span><b id="h-min">--</b></div>
+          <div><span>Máximo</span><b id="h-max">--</b></div>
+          <div><span>Variación</span><b id="h-var">--</b></div>
+        </div>
+        <div class="grafica-caja" style="position:relative">
+          <div id="h-estado" class="cargando oculto"><div class="spinner"></div><span>Descargando histórico...</span></div>
+          <svg id="grafica" viewBox="0 0 800 320" preserveAspectRatio="none"></svg>
+          <div class="tooltip-graf oculto" id="h-tip"></div>
+        </div>
+        <div class="leyenda" style="position:static;display:inline-flex;margin-top:12px">
+          <span><i style="background:var(--acento)"></i>Gasolinera</span>
+          <span><i style="background:var(--azul)"></i>Media del municipio</span>
+        </div>
+      </div>
+    </section>
+    <section class="seccion activa">
+      <div class="caja">
+        <h2>Estadísticas de tu zona</h2>
+        <p class="desc" id="zona-titulo">Según tu última búsqueda.</p>
+        <div id="zona-stats"></div>
+      </div>
+    </section>
+    </div>
+  </main>
+
+  <footer id="pie"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/comun.js"></script>
+  <script src="js/nube.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/herramientas.js"></script>
+</body>
+</html>

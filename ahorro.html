@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>LitroGo | Calculadora de ahorro</title>
+  <meta name="description" content="Calcula cuánto ahorras al mes y al año repostando en la gasolinera más barata." />
+  <script>(function(){try{var t=localStorage.getItem("gr_tema");t=t?JSON.parse(t):null;if(!t)t=matchMedia("(prefers-color-scheme: dark)").matches?"oscuro":"claro";document.documentElement.dataset.tema=t;}catch(e){}})();</script>
+  <link rel="icon" href="favicon.svg" type="image/svg+xml" />
+  <link rel="icon" href="img/icono-32.png" sizes="32x32" type="image/png" />
+  <link rel="apple-touch-icon" href="img/icono-180.png" />
+  <meta name="theme-color" content="#0B0F0E" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Sora:wght@600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="css/estilos.css" />
+</head>
+<body data-pagina="ahorro" class="">
+  <header id="cabecera"></header>
+
+  <main>
+    <section class="hero-herr contenedor ">
+      <span class="hero-etiqueta"><span class="punto-vivo"></span><span id="fecha-datos">Precios oficiales del Ministerio</span></span>
+      <h1>Calculadora de <span class="grad">ahorro</span></h1>
+      <p>Compara tu gasolinera habitual con la más barata de tu zona y descubre el ahorro real, descontando el desvío.</p>
+    </section>
+    <div class="contenedor">
+<section class="seccion activa" id="sec-calculadora">
+      <div class="rejilla-2">
+        <div class="caja">
+          <h2>Calculadora de ahorro</h2>
+          <p class="desc">Compara tu gasolinera habitual con la más barata de la zona y descubre cuánto te ahorras de verdad, incluso contando el desvío.</p>
+          <div class="campos">
+            <div class="campo ancho"><label for="c-comb">Combustible</label><div class="entrada"><select id="c-comb"></select></div></div>
+            <div class="campo"><label for="c-habitual">Precio en tu gasolinera habitual</label><div class="entrada"><input id="c-habitual" type="number" step="0.001" min="0" value="1.559" /><span class="unidad">€/L</span></div></div>
+            <div class="campo"><label for="c-barata">Precio en la más barata</label><div class="entrada"><input id="c-barata" type="number" step="0.001" min="0" value="1.459" /><span class="unidad">€/L</span></div></div>
+            <div class="campo"><label for="c-litros">Litros por repostaje</label><div class="entrada"><input id="c-litros" type="number" step="1" min="1" value="45" /><span class="unidad">L</span></div></div>
+            <div class="campo"><label for="c-veces">Repostajes al mes</label><div class="entrada"><input id="c-veces" type="number" step="1" min="1" value="4" /><span class="unidad">veces</span></div></div>
+            <div class="campo"><label for="c-desvio">Kilómetros extra de desvío</label><div class="entrada"><input id="c-desvio" type="number" step="0.5" min="0" value="4" /><span class="unidad">km ida y vuelta</span></div></div>
+            <div class="campo"><label for="c-consumo">Consumo de tu coche</label><div class="entrada"><input id="c-consumo" type="number" step="0.1" min="1" value="6.5" /><span class="unidad">L/100 km</span></div></div>
+          </div>
+          <div class="barata-cerca" id="c-barata-info" aria-live="polite"></div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
+            <button class="btn btn-sec btn-peq" id="c-cargar" type="button"></button>
+          </div>
+          <p class="ayuda" id="c-origen"></p>
+          <p class="ayuda" id="c-vehiculo"></p>
+        </div>
+
+        <div>
+          <div class="resultado-ahorro">
+            <div class="lbl">Ahorro neto al año</div>
+            <div class="grande" id="r-anual">0,00 €</div>
+            <div class="sub" id="r-frase">Introduce tus datos para calcularlo.</div>
+            <div class="desglose">
+              <div><span>Al mes</span><b id="r-mes">--</b></div>
+              <div><span>Por repostaje</span><b id="r-rep">--</b></div>
+              <div><span>Coste desvío/mes</span><b id="r-desvio">--</b></div>
+            </div>
+            <div class="barra-comp">
+              <div class="fila"><span>Habitual</span><div class="pista"><div class="relleno" id="b-hab" style="background:var(--rojo)"></div></div><b id="b-hab-v">--</b></div>
+              <div class="fila"><span>Más barata</span><div class="pista"><div class="relleno" id="b-bar" style="background:var(--verde)"></div></div><b id="b-bar-v">--</b></div>
+            </div>
+            <p class="ayuda" style="position:relative">Gasto mensual en combustible, incluyendo el combustible del desvío.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+    </div>
+  </main>
+
+  <footer id="pie"></footer>
+
+  <script src="js/config.js"></script>
+  <script src="js/comun.js"></script>
+  <script src="js/nube.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/herramientas.js"></script>
+</body>
+</html>
