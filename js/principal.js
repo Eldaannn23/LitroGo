@@ -254,10 +254,10 @@
 
   async function buscarDesde(origen, mantenerVista = false) {
     estado.origen = origen;
-    GR.guardar("ultimoOrigen", origen);
+    GR.guardar("ultimoOrigen", { ...origen, provisional: undefined });
     pintarOrigen();
     if (!origen.direccionReal && (origen.nombre === "Tu ubicación" || origen.nombre === "Punto elegido en el mapa")) {
-      GR.direccionDe(origen.lat, origen.lon).then((d) => { if (d && estado.origen === origen) { origen.direccionReal = d; pintarOrigen(); GR.guardar("ultimoOrigen", origen); } });
+      GR.direccionDe(origen.lat, origen.lon).then((d) => { if (d && estado.origen === origen) { origen.direccionReal = d; pintarOrigen(); GR.guardar("ultimoOrigen", { ...origen, provisional: undefined }); } });
     }
     if (!mantenerVista) $("#lista").innerHTML = '<div class="esqueleto"></div><div class="esqueleto"></div><div class="esqueleto"></div>';
     $("#cuenta").textContent = "Descargando precios oficiales...";
@@ -279,7 +279,8 @@
     if (!o) { el.classList.add("oculto"); return; }
     const nombre = o.direccionReal || (o.nombre || "").split(",").slice(0, 3).join(",");
     let h = `${icono("pin")}<span>Buscando desde <b>${esc(nombre)}</b>`;
-    if (o.porIP) h += ` <em class="impreciso">(aproximada por tu conexión a internet)</em>`;
+    if (o.provisional) h += ` <em class="impreciso">(aproximada, afinando tu ubicación...)</em>`;
+    else if (o.porIP) h += ` <em class="impreciso">(aproximada por tu conexión a internet)</em>`;
     else if (o.precision && o.precision > 300) h += ` <em class="impreciso">(ubicación aproximada, ±${fmtKm(o.precision / 1000)})</em>`;
     h += `. Si no es correcto, arrastra el punto azul del mapa o escribe tu dirección.</span>`;
     el.innerHTML = h; el.classList.remove("oculto");
@@ -461,21 +462,37 @@
   }
 
   /* ---------- Ubicación y dirección ---------- */
+  let turnoUbicacion = 0;
+  function avisarImprecisa(p) {
+    if (p.porIP) GR.toast("Ubicación aproximada", "Tu navegador no nos ha dado la ubicación exacta, así que te situamos por tu conexión a internet. Escribe tu dirección o arrastra el punto azul del mapa para afinar.", "alerta", 9000);
+    else if (p.precision > 1500) GR.toast("Ubicación aproximada", `Tu navegador solo sabe dónde estás con un margen de ${fmtKm(p.precision / 1000)}. Para distancias exactas escribe tu dirección o arrastra el punto azul del mapa.`, "alerta", 9000);
+  }
   async function usarUbicacion(forzar = false) {
-    const b = $("#btn-ubicacion");
+    const b = $("#btn-ubicacion"), turno = ++turnoUbicacion;
+    const listo = () => { if (turno === turnoUbicacion) { b.disabled = false; b.lastChild.textContent = " Mi ubicación"; } };
     b.disabled = true; b.lastChild.textContent = " Localizando...";
     datos().catch(() => {});
+    // Si el navegador tarda, se empieza con la posición aproximada y, cuando llega la buena, se actualiza sola
+    const alMejorar = (mejor) => {
+      const o = estado.origen;
+      if (turno !== turnoUbicacion || !o || !o.provisional) return; // la persona ya ha elegido otro punto
+      if (mejor && !mejor.porIP) { avisarImprecisa(mejor); buscarDesde({ ...mejor, nombre: "Tu ubicación" }); return; }
+      delete o.provisional; pintarOrigen(); avisarImprecisa(o);
+    };
+    let p;
     try {
-      const p = await GR.pedirUbicacion({ forzar: forzar === true });
-      GR.guardar("prefUbicacion", "si");
-      $("#direccion").value = "";
-      if (p.porIP) GR.toast("Ubicación aproximada", `No hemos podido usar el GPS o el wifi, así que te situamos por tu conexión${p.ciudad ? " (" + p.ciudad + ")" : ""}. Escribe tu dirección o arrastra el punto azul del mapa para afinar.`, "alerta", 10000);
-      else if (p.precision > 1500) GR.toast("Ubicación aproximada", `Tu navegador solo sabe dónde estás con un margen de ${fmtKm(p.precision / 1000)}. Para distancias exactas escribe tu dirección o arrastra el punto azul del mapa.`, "alerta", 9000);
-      await buscarDesde({ ...p, nombre: "Tu ubicación" });
+      p = await GR.pedirUbicacion({ forzar: forzar === true, alMejorar });
     } catch (err) {
+      listo();
       GR.toast("No pudimos obtener tu ubicación", err.message + " Mientras tanto, puedes escribir tu dirección.", "error", 12000);
       $("#direccion").focus();
-    } finally { b.disabled = false; b.lastChild.textContent = " Mi ubicación"; }
+      return;
+    }
+    listo();
+    GR.guardar("prefUbicacion", "si");
+    $("#direccion").value = "";
+    if (!p.provisional) avisarImprecisa(p);
+    await buscarDesde({ ...p, nombre: "Tu ubicación" });
   }
   $("#btn-ubicacion").addEventListener("click", () => usarUbicacion(true));
 

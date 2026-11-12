@@ -247,24 +247,25 @@ const GR = (() => {
   }
 
   /* ---------- Ubicación del usuario ----------
-     1) GPS / wifi del navegador con alta precisión (se afina unos segundos).
-     2) Si falla (no por permiso denegado): posición del navegador en modo normal.
-     3) Si también falla: posición aproximada por la conexión a internet (IP).   */
+     1) Wifi / GPS del navegador (se afina como mucho un segundo).
+     2) Si tarda o falla (no por permiso denegado): posición aproximada por la conexión
+        a internet (IP), que se sustituye por la buena en cuanto llega.            */
   function errorUbicacion(code) {
     const archivo = location.protocol === "file:";
     const e = new Error(
       code === 1
         ? (archivo
-          ? "El navegador no deja usar la ubicación porque la web está abierta como archivo de tu ordenador. Cuando esté publicada en internet (https) funcionará; mientras tanto, escribe tu dirección."
+          ? "El navegador no deja usar la ubicación porque la web está abierta como archivo de tu ordenador. Cuando esté publicada en internet (https) o abierta desde un servidor local (localhost) funcionará."
           : "El navegador tiene bloqueada la ubicación para esta web. Pulsa el icono que hay a la izquierda de la dirección de la página, cambia Ubicación a Permitir y recarga.")
         : "Tu dispositivo no ha podido darnos la ubicación. En Windows revisa Configuración > Privacidad y seguridad > Ubicación (debe estar activada, también para el navegador)."
     );
     e.code = code; return e;
   }
 
-  /* Lectura rápida.
+  /* Lectura del navegador (wifi / GPS).
      - Si el permiso ya está concedido, se piden a la vez la posición por wifi (casi
-       instantánea) y la del GPS, y se usa la primera buena (±150 m).
+       instantánea, y vale una de hace pocos minutos) y la del GPS, y se usa la primera
+       buena (±150 m). Como mucho se esperan 7 s.
      - Si el navegador aún tiene que preguntar, se hace una sola petición (dos a la vez
        pueden hacer que algunos navegadores la rechacen) y no se cuenta el tiempo que la
        persona tarda en contestar.                                                     */
@@ -280,48 +281,73 @@ const GR = (() => {
       const afinar = () => {
         if (idW !== null || fin) return;
         peticiones++;
-        idW = navigator.geolocation.watchPosition(ok, ko, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
+        idW = navigator.geolocation.watchPosition(ok, ko, { enableHighAccuracy: true, timeout: 6000, maximumAge: 0 });
       };
       const ok = (p) => {
+        if (fin) return;
         const l = { lat: p.coords.latitude, lon: p.coords.longitude, precision: p.coords.accuracy };
         if (!mejor || l.precision < mejor.precision) mejor = l;
         if (l.precision <= 150) return acabar();
-        afinar(); // llegó una posición aproximada: se intenta mejorar con el GPS
-        if (!tRefinar) tRefinar = setTimeout(() => acabar(), 2500);
-        if (!tMax) tMax = setTimeout(() => acabar(errorUbicacion(3)), 8000);
+        afinar(); // llegó una posición aproximada: se intenta mejorar un momento con el GPS
+        if (!tRefinar) tRefinar = setTimeout(() => acabar(), 1200);
       };
       const ko = (e) => {
+        if (fin) return;
         if (mejor) return acabar();
         if (e.code === 1) return acabar(errorUbicacion(1));
         if (++errores >= peticiones) acabar(errorUbicacion(e.code));
       };
       peticiones++;
-      navigator.geolocation.getCurrentPosition(ok, ko, { enableHighAccuracy: false, timeout: 8000, maximumAge: 60000 });
-      if (estadoPermiso === "granted") { afinar(); tMax = setTimeout(() => acabar(errorUbicacion(3)), 10000); }
-      else tMax = null; // mientras se muestra la pregunta del navegador no hay límite propio
+      navigator.geolocation.getCurrentPosition(ok, ko, { enableHighAccuracy: false, timeout: 6000, maximumAge: 5 * 60000 });
+      // mientras se muestra la pregunta del navegador no hay límite propio
+      if (estadoPermiso === "granted") { afinar(); tMax = setTimeout(() => acabar(errorUbicacion(3)), 7000); }
     });
   }
 
-  async function ubicacionPorIP() {
-    const servicios = [
-      ["https://ipapi.co/json/", (j) => ({ lat: j.latitude, lon: j.longitude, ciudad: j.city })],
-      ["https://ipwho.is/", (j) => ({ lat: j.latitude, lon: j.longitude, ciudad: j.city })],
-      ["https://get.geojs.io/v1/ip/geo.json", (j) => ({ lat: +j.latitude, lon: +j.longitude, ciudad: j.city })],
-    ];
-    for (const [url, leerJ] of servicios) {
-      try {
-        const r = await fetch(url); if (!r.ok) continue;
-        const l = leerJ(await r.json());
-        if (isFinite(l.lat) && isFinite(l.lon) && l.lat) return { ...l, precision: 5000, porIP: true };
-      } catch {}
+  /* Posición aproximada por la conexión a internet. Se pregunta a los tres servicios a la
+     vez (cada uno con un límite de 3,5 s) y se usa el primero que conteste bien. El
+     resultado se recuerda 30 minutos.                                                  */
+  const VIDA_IP = 30 * 60000;
+  async function pedirJSON(url, ms) {
+    const c = new AbortController(), t = setTimeout(() => c.abort(), ms);
+    try {
+      const r = await fetch(url, { signal: c.signal });
+      if (!r.ok) throw new Error(url + " " + r.status);
+      return await r.json();
+    } finally { clearTimeout(t); }
+  }
+  let promesaIP = null;
+  function ubicacionPorIP() {
+    const previa = leer("posicionIP", null);
+    if (previa && Date.now() - previa.t < VIDA_IP) return Promise.resolve(previa);
+    if (!promesaIP) {
+      const servicios = [
+        ["https://ipwho.is/", (j) => ({ lat: j.latitude, lon: j.longitude, ciudad: j.city })],
+        ["https://get.geojs.io/v1/ip/geo.json", (j) => ({ lat: +j.latitude, lon: +j.longitude, ciudad: j.city })],
+        ["https://ipapi.co/json/", (j) => ({ lat: j.latitude, lon: j.longitude, ciudad: j.city })],
+      ];
+      promesaIP = Promise.any(servicios.map(async ([url, leerJ]) => {
+        const l = leerJ(await pedirJSON(url, 3500));
+        if (!(isFinite(l.lat) && isFinite(l.lon) && l.lat)) throw new Error("sin datos");
+        return { ...l, precision: 5000, porIP: true };
+      })).then((ip) => { guardar("posicionIP", { ...ip, t: Date.now() }); return ip; })
+        .catch(() => { promesaIP = null; return null; });
     }
-    return null;
+    return promesaIP;
   }
 
-  /* La última posición se reutiliza 3 minutos para que cambiar de página sea instantáneo.
-     "forzar" (el botón "Usar mi ubicación") pide siempre una lectura nueva.            */
-  const VIDA_POSICION = 3 * 60000;
-  async function pedirUbicacion({ forzar = false } = {}) {
+  /* Pide la ubicación sin hacer esperar:
+     - La última posición buena se reutiliza 3 minutos (cambiar de página es instantáneo).
+       "forzar" (el botón "Mi ubicación") pide siempre una lectura nueva.
+     - Si el navegador tarda más de 2,5 s y quien llama pasa "alMejorar", se devuelve ya
+       la posición aproximada por internet marcada como "provisional" y se sigue buscando
+       la buena. Al terminar se llama a alMejorar(posición): la precisa si llegó, o la
+       aproximada (porIP) si el navegador no pudo.
+     - Si el navegador ha fallado hace poco (10 min), no se le vuelve a esperar: se
+       responde al momento con la aproximada.                                          */
+  const VIDA_POSICION = 3 * 60000, VIDA_FALLO = 10 * 60000, ESPERA_NAVEGADOR = 2500;
+  const esperar = (ms) => new Promise((r) => setTimeout(r, ms));
+  async function pedirUbicacion({ forzar = false, alMejorar = null } = {}) {
     const previa = leer("ultimaPosicion", null);
     if (!forzar && previa && Date.now() - previa.t < VIDA_POSICION && !previa.porIP) return previa;
     if (!navigator.geolocation) {
@@ -335,22 +361,43 @@ const GR = (() => {
       if (est) estado = est.state;
     } catch {}
     if (estado === "denied") throw errorUbicacion(1);
-    // si el GPS tarda más de 4 s, se pide ya la posición aproximada por si hiciera falta
-    let ipEnCamino = null;
-    const tIP = estado === "granted" ? setTimeout(() => { ipEnCamino = ubicacionPorIP().catch(() => null); }, 4000) : null;
-    try {
-      const p = await lecturaRapida(estado);
-      clearTimeout(tIP);
-      guardar("ultimaPosicion", { ...p, t: Date.now() });
-      return p;
-    } catch (e) {
-      clearTimeout(tIP);
-      console.warn("Ubicación:", e.message);
-      if (e.code === 1) throw e;
-      const ip = await (ipEnCamino || ubicacionPorIP().catch(() => null));
+    const concedido = estado === "granted";
+    const falloReciente = concedido && Date.now() - leer("falloUbicacion", 0) < VIDA_FALLO;
+
+    // páginas que no pueden actualizarse después: si el navegador acaba de fallar, no se repite la espera
+    if (falloReciente && !forzar && !alMejorar) {
+      const ip = await ubicacionPorIP();
       if (ip) return ip;
-      throw e;
     }
+
+    // la aproximada solo se pide si hace falta (el navegador tarda o ha fallado)
+    let ipEnCamino = null;
+    const pedirIP = () => ipEnCamino || (ipEnCamino = ubicacionPorIP());
+    const tIP = concedido ? setTimeout(pedirIP, falloReciente ? 0 : 800) : null;
+
+    const definitiva = lecturaRapida(estado).then(
+      (p) => {
+        clearTimeout(tIP);
+        guardar("ultimaPosicion", { ...p, t: Date.now() });
+        guardar("falloUbicacion", 0);
+        return p;
+      },
+      async (e) => {
+        clearTimeout(tIP);
+        console.warn("Ubicación:", e.message);
+        if (e.code === 1) throw e;
+        guardar("falloUbicacion", Date.now());
+        const ip = await pedirIP();
+        if (ip) return ip;
+        throw e;
+      }
+    );
+    if (!alMejorar || !concedido) return definitiva;
+
+    const provisional = esperar(falloReciente ? 0 : ESPERA_NAVEGADOR).then(pedirIP).then((ip) => (ip ? { ...ip, provisional: true } : definitiva));
+    const primera = await Promise.race([definitiva, provisional]);
+    if (primera.provisional) definitiva.then((p) => alMejorar(p), () => alMejorar(null));
+    return primera;
   }
 
   /* ---------- Formato ---------- */
