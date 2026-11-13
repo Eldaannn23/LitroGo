@@ -262,8 +262,26 @@
     if (!mantenerVista) $("#lista").innerHTML = '<div class="esqueleto"></div><div class="esqueleto"></div><div class="esqueleto"></div>';
     $("#cuenta").textContent = "Descargando precios oficiales...";
     try {
-      await datos();
-      calcular(mantenerVista);
+      const total = datos();
+      // si el listado completo no está ya disponible, se empieza con las provincias cercanas (descarga pequeña)
+      let d = await Promise.race([total.catch(() => null), new Promise((r) => setTimeout(() => r(null), 150))]);
+      if (!d) {
+        const zona = GR.estacionesZona(origen.lat, origen.lon).catch(() => total);
+        d = await Promise.race([total.catch(() => zona), zona]);
+      }
+      if (estado.origen !== origen) return; // mientras tanto se ha elegido otro punto
+      datosVista = d;
+      const pintado = !d.parcial || hayEnRadio(d);
+      if (pintado) calcular(mantenerVista);
+      if (d.parcial) {
+        try {
+          const t = await total;
+          if (datosVista === d) { datosVista = t; if (estado.origen) calcular(pintado ? true : mantenerVista); }
+        } catch (err) {
+          if (!pintado) throw err;
+          console.warn("No llegó el listado completo; se mantienen las gasolineras de la zona:", err);
+        }
+      }
     } catch (err) {
       console.error(err);
       $("#lista").innerHTML = `<div class="vacio"><div class="icono-grande">${icono("info")}</div><h3>No se pudieron descargar los precios</h3>
@@ -273,6 +291,19 @@
       $("#reintentar").onclick = () => buscarDesde(origen);
     }
   }
+
+  /* Datos que se están pintando: el listado completo o, mientras llega, el de las provincias cercanas */
+  let datosVista = null;
+  function hayEnRadio(d) {
+    const o = estado.origen, c = estado.combustible;
+    return d.estaciones.some((e) => e.precios[c] && GR.distanciaKm(o.lat, o.lon, e.lat, e.lon) <= estado.radio);
+  }
+  // precios nuevos descargados en segundo plano: se repinta sin mover el mapa
+  window.addEventListener("datosactualizados", (ev) => {
+    if (!datosVista) return;
+    datosVista = ev.detail;
+    if (estado.origen) calcular(true);
+  });
 
   function pintarOrigen() {
     const o = estado.origen, el = $("#origen-txt");
@@ -288,7 +319,7 @@
 
   let turnoRutas = 0;
   function calcular(mantenerVista = false) {
-    datos().then((dat) => {
+    Promise.resolve(datosVista || datos()).then((dat) => {
       const o = estado.origen, c = estado.combustible;
       const lista = [];
       for (const e of dat.estaciones) {

@@ -13,6 +13,8 @@ const GR = (() => {
   const PROXY = "";
 
   const CACHE_MINUTOS = 30;
+  /* Hasta esta antigüedad, el listado guardado se enseña al momento mientras se descarga el nuevo */
+  const CACHE_MAX_HORAS = 24;
 
   /* Distancias por carretera.
      - Sin clave: se usa OSRM (OpenStreetMap), gratuito, mismas rutas en coche que un navegador GPS.
@@ -133,20 +135,63 @@ const GR = (() => {
     throw ultimoError;
   }
 
-  let memoria = null;
-  /** Devuelve { fecha, estaciones[] } usando caché de 30 minutos. */
-  async function cargarEstaciones(forzar = false) {
-    if (memoria && !forzar) return memoria;
-    if (!forzar) {
-      const c = await idb.get("estaciones");
-      if (c && Date.now() - c.guardado < CACHE_MINUTOS * 60000) { memoria = c; return c; }
-    }
+  let memoria = null, refresco = null;
+  async function descargarEstaciones() {
     const j = await pedir(API + "EstacionesTerrestres/");
     const estaciones = (j.ListaEESSPrecio || []).map(normalizar).filter((e) => e.lat && e.lon);
     memoria = { fecha: j.Fecha, guardado: Date.now(), estaciones };
     idb.set("estaciones", memoria);
     registrarPreciosFavoritos(memoria);
     return memoria;
+  }
+  /** Devuelve { fecha, estaciones[] }.
+      - Listado guardado hace menos de 30 minutos: se usa tal cual.
+      - Guardado hace menos de 24 horas: se devuelve al momento (marcado "antiguo") y se
+        descarga el nuevo en segundo plano; al llegar se lanza el evento "datosactualizados".
+      - Si no hay nada guardado: se descarga (varios MB, tarda unos segundos).          */
+  async function cargarEstaciones(forzar = false) {
+    if (memoria && !forzar) return memoria;
+    if (!forzar) {
+      const c = await idb.get("estaciones");
+      const edad = c ? Date.now() - c.guardado : Infinity;
+      if (edad < CACHE_MINUTOS * 60000) { memoria = c; return c; }
+      if (edad < CACHE_MAX_HORAS * 3600000) {
+        memoria = { ...c, antiguo: true };
+        if (!refresco) refresco = descargarEstaciones()
+          .then((d) => window.dispatchEvent(new CustomEvent("datosactualizados", { detail: d })))
+          .catch((err) => console.warn("No se pudieron actualizar los precios:", err))
+          .finally(() => { refresco = null; });
+        return memoria;
+      }
+    }
+    return descargarEstaciones();
+  }
+
+  /* Primera visita: mientras baja el listado completo de España, se piden solo las
+     provincias más cercanas al punto de búsqueda (descargas pequeñas y rápidas).
+     Cada provincia: [código, latitud y longitud aproximadas de su centro].          */
+  const PROVINCIAS = [
+    ["01", 42.83, -2.72], ["02", 38.83, -1.98], ["03", 38.48, -0.57], ["04", 37.20, -2.34], ["05", 40.57, -4.95], ["06", 38.71, -6.14],
+    ["07", 39.57, 2.91], ["08", 41.73, 1.98], ["09", 42.37, -3.59], ["10", 39.71, -6.16], ["11", 36.55, -5.76], ["12", 40.24, -0.15],
+    ["13", 38.93, -3.83], ["14", 37.99, -4.81], ["15", 43.13, -8.46], ["16", 39.90, -2.20], ["17", 42.13, 2.67], ["18", 37.31, -3.27],
+    ["19", 40.81, -2.63], ["20", 43.14, -2.19], ["21", 37.58, -6.83], ["22", 42.20, -0.07], ["23", 38.02, -3.44], ["24", 42.62, -5.84],
+    ["25", 42.04, 1.05], ["26", 42.27, -2.52], ["27", 43.01, -7.45], ["28", 40.50, -3.72], ["29", 36.81, -4.73], ["30", 38.00, -1.49],
+    ["31", 42.67, -1.65], ["32", 42.20, -7.59], ["33", 43.29, -5.99], ["34", 42.37, -4.54], ["35", 28.36, -14.55], ["36", 42.44, -8.46],
+    ["37", 40.80, -6.07], ["38", 28.31, -17.02], ["39", 43.20, -4.03], ["40", 41.17, -4.05], ["41", 37.44, -5.68], ["42", 41.62, -2.59],
+    ["43", 41.09, 0.82], ["44", 40.66, -0.82], ["45", 39.79, -4.15], ["46", 39.37, -0.80], ["47", 41.63, -4.85], ["48", 43.24, -2.85],
+    ["49", 41.73, -5.98], ["50", 41.62, -1.06], ["51", 35.89, -5.32], ["52", 35.29, -2.94],
+  ];
+  const zonas = new Map();
+  /** { fecha, estaciones[], parcial: true } con las gasolineras de las 3 provincias más cercanas. */
+  function estacionesZona(lat, lon, n = 3) {
+    const ids = PROVINCIAS.map(([id, a, b]) => [id, distanciaKm(lat, lon, a, b)]).sort((x, y) => x[1] - y[1]).slice(0, n).map((x) => x[0]);
+    const clave = ids.join("-");
+    if (!zonas.has(clave)) {
+      zonas.set(clave, Promise.all(ids.map((id) => pedir(`${API}EstacionesTerrestres/FiltroProvincia/${id}`)))
+        .then((js) => ({ fecha: js[0].Fecha, parcial: true, estaciones: js.flatMap((j) => (j.ListaEESSPrecio || []).map(normalizar)).filter((e) => e.lat && e.lon) }))
+        .catch((err) => { zonas.delete(clave); throw err; }));
+    }
+    return zonas.get(clave);
   }
 
   /** Histórico oficial de un municipio para una fecha (dd-mm-aaaa). */
@@ -542,12 +587,18 @@ const GR = (() => {
     if (!promesaDatos) {
       promesaDatos = cargarEstaciones().then((d) => {
         window.dispatchEvent(new CustomEvent("datoscargados", { detail: d }));
-        comprobarAlertas(d);
+        if (!d.antiguo) comprobarAlertas(d); // con precios de ayer no se avisa: se espera a los nuevos
         return d;
       }).catch((err) => { promesaDatos = null; throw err; });
     }
     return promesaDatos;
   }
+  /* Llegan los precios nuevos que se estaban descargando en segundo plano */
+  window.addEventListener("datosactualizados", (ev) => {
+    promesaDatos = Promise.resolve(ev.detail);
+    window.dispatchEvent(new CustomEvent("datoscargados", { detail: ev.detail }));
+    comprobarAlertas(ev.detail);
+  });
 
   /* Gasolineras más cercanas a la persona (por su ubicación o su última búsqueda),
      para los desplegables de opiniones, historial y alertas.                     */
@@ -760,7 +811,7 @@ const GR = (() => {
 
   return {
     temaActual, ponerTema, colorTema, datos, estacionesConocidas, extraConocidas, opcionesEstaciones, cargarCercanas, mejorarSelector, opcionesComb, comparar, perfil, resumenEstacion,
-    API, COMBUSTIBLES, combustible, icono, leer, guardar, cargarEstaciones, historicoMunicipio,
+    API, COMBUSTIBLES, combustible, icono, leer, guardar, cargarEstaciones, estacionesZona, historicoMunicipio,
     distanciaKm, urlMaps, geocodificar, distanciasCarretera, fuenteDistancias, direccionDe, pedirUbicacion, fmtPrecio, fmtEuros, fmtKm, esc, iniciales, logoHTML, sinLogo, revisarLogo,
     favoritos, alertas, evaluarAlerta, comprobarAlertas, opiniones, toast, estrellasHTML, registrarPrecio, hoyClave,
   };
